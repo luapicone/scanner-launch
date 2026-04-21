@@ -1,0 +1,90 @@
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass, field, is_dataclass
+from datetime import datetime
+from typing import Any
+
+
+@dataclass
+class TokenRecord:
+    id: str
+    name: str
+    symbol: str
+    chain: str
+    price: str = "—"
+    marketCap: str = "—"
+    liquidity: str = "—"
+    volume24h: str = "—"
+    launchTime: str = "—"
+    launchAgo: str = "—"
+    buyPlatform: list[str] = field(default_factory=list)
+    buyLink: str = "—"
+    website: str = "no"
+    twitter: str = "no"
+    telegram: str = "no"
+    extra: str = "—"
+    description: str = "—"
+    sourceUrl: str = "—"
+
+
+@dataclass
+class DiscoveryResult:
+    tokens: list[TokenRecord] = field(default_factory=list)
+    source: str = "—"
+    fetchedAt: str = "—"
+    error: str | None = None
+    warnings: list[str] = field(default_factory=list)
+
+
+@dataclass
+class RiskScores:
+    liquidez: int
+    volumen: int
+    comunidad: int
+    transparencia: int
+    onchain: int
+
+
+@dataclass
+class RiskAnalysisResult:
+    riskLevel: str
+    overallScore: int
+    scores: RiskScores
+    redFlags: list[str] = field(default_factory=list)
+    greenFlags: list[str] = field(default_factory=list)
+    verdict: str = ""
+    analysis: str = ""
+    tokenId: str | None = None
+    fetchedAt: str | None = None
+
+
+@dataclass
+class SearchHit:
+    title: str
+    url: str
+    snippet: str = ""
+    provider: str = "manual"
+    payload: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class ScanRequest:
+    limit: int = 12
+    max_age_hours: int = 6
+    query_set: list[str] = field(default_factory=list)
+
+
+@dataclass
+class AnalyzeRequest:
+    token: str
+    chain: str | None = None
+
+
+def now_art(dt: datetime) -> str:
+    return dt.strftime("%d/%m/%Y %H:%M:%S")
+
+
+def to_dict(value):
+    if is_dataclass(value):
+        return asdict(value)
+    return value
