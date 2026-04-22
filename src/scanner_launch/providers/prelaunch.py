@@ -193,6 +193,8 @@ class PrelaunchProvider:
             telegram_url = None
 
         buy_url = self._pick_action_link(candidates, stage=row.get("stage"))
+        if not buy_url:
+            buy_url = self._pick_access_link(candidates, stage=row.get("stage"))
         buy_label = self._infer_action_label(buy_url, stage=row.get("stage")) if buy_url else None
         chain = self._infer_chain(description, row.get("categories") or [], html_text)
 
@@ -227,7 +229,10 @@ class PrelaunchProvider:
         docs_url = self._pick_docs(all_links)
         twitter_url = self._pick_social(all_links, ["twitter.com", "x.com"])
         telegram_url = self._pick_social(all_links, ["t.me", "telegram.me"])
-        buy_url = self._pick_action_link(self._extract_link_candidates(html_text), stage=row.get("stage"))
+        candidates = self._extract_link_candidates(html_text)
+        buy_url = self._pick_action_link(candidates, stage=row.get("stage"))
+        if not buy_url:
+            buy_url = self._pick_access_link(candidates, stage=row.get("stage"))
         buy_label = self._infer_action_label(buy_url, stage=row.get("stage")) if buy_url else None
 
         return (
@@ -351,10 +356,11 @@ class PrelaunchProvider:
             haystack = f"{url} {label}".lower()
             if any(token in haystack for token in blocked):
                 continue
-            if any(token in haystack for token in ["blog.", "/blog/", "/news/", "/article/", "/press/", "medium"]):
-                continue
 
             score = 0
+            if any(token in haystack for token in ["blog.", "/blog/", "/news/", "/article/", "/press/", "medium"]):
+                if not any(token in haystack for token in ["tge", "listing", "launch", "whitelist", "airdrop", "claim", "update", "guide"]):
+                    score -= 25
             if any(re.search(pattern, haystack) for pattern in direct_patterns):
                 score += 40
             if any(phrase in haystack for phrase in ["token sale", "public sale", "pre sale", "presale", "join waitlist"]):
@@ -379,6 +385,60 @@ class PrelaunchProvider:
                 best_url = url
 
         return best_url if best_score >= 25 else None
+
+    def _pick_access_link(self, candidates: list[tuple[str, str]], stage: str | None = None) -> str | None:
+        blocked = [
+            "icoanalytics.org",
+            "coinmarketcap.com",
+            "gmpg.org",
+            "wp-content",
+        ]
+        access_patterns = [
+            r"\bwhitelist\b",
+            r"\bwaitlist\b",
+            r"\bregister\b",
+            r"\bjoin\b",
+            r"\binvite\b",
+            r"\bclaim\b",
+            r"\bairdrop\b",
+            r"\blaunch\b",
+            r"\blisting\b",
+            r"\btge\b",
+            r"\bguide\b",
+            r"\bupdate\b",
+            r"\bhow\b",
+        ]
+        social_domains = ["twitter.com", "x.com", "t.me", "telegram.me", "discord.gg", "discord.com"]
+        best_url: str | None = None
+        best_score = 0
+        stage_low = (stage or "").lower()
+
+        for href, label in candidates:
+            url = self._normalize_protocol(href)
+            haystack = f"{url} {label}".lower()
+            if any(token in haystack for token in blocked):
+                continue
+
+            score = 0
+            if any(re.search(pattern, haystack) for pattern in access_patterns):
+                score += 30
+            if any(token in haystack for token in ["/blog/", "/news/", "/article/", "/press/"]):
+                if any(token in haystack for token in ["tge", "listing", "launch", "claim", "airdrop", "update", "guide"]):
+                    score += 18
+            if any(domain in haystack for domain in social_domains):
+                score += 14
+            if "tge" in stage_low and any(token in haystack for token in ["tge", "launch", "update", "claim"]):
+                score += 12
+            if "listing" in stage_low and any(token in haystack for token in ["listing", "trade", "exchange"]):
+                score += 12
+            if "details" in haystack:
+                score += 2
+
+            if score > best_score:
+                best_score = score
+                best_url = url
+
+        return best_url if best_score >= 20 else None
 
     def _pick_website(self, links: list[str]) -> str | None:
         blocked = [
@@ -452,6 +512,8 @@ class PrelaunchProvider:
             return "Comprar / participar"
         if any(token in low for token in ["join", "whitelist", "waitlist", "register", "invite"]):
             return "Registrarse / Whitelist"
+        if any(token in low for token in ["tge", "listing", "launch", "update", "guide", "how-to", "how_to"]):
+            return "Cómo conseguirlo"
         if any(token in low for token in ["trade", "swap"]):
             return "Comprar / trade"
         if "tge" in stage_low or "auction" in stage_low or "sale" in stage_low:

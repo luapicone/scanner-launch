@@ -155,6 +155,23 @@ def build_live_buy_target(chain_id: str | None, token_address: str | None, dex_i
 def build_prelaunch_buy_target(buy_url: str | None, website_url: str | None, project_url: str | None, stage: str | None) -> dict[str, str | bool]:
     if buy_url and buy_url != "—":
         venue = domain_label(buy_url)
+        low = buy_url.lower()
+        if any(token in low for token in ["whitelist", "waitlist", "register", "join", "invite"]):
+            return {
+                "buyWhere": f"{venue} · acceso temprano",
+                "buyLink": buy_url,
+                "buyLabel": "Registrarse / Whitelist",
+                "buyNote": "Se detectó una ruta pública para sumarte al acceso temprano, whitelist o registro del proyecto.",
+                "hasDirectBuy": False,
+            }
+        if any(token in low for token in ["tge", "listing", "launch", "update", "guide", "claim", "airdrop"]):
+            return {
+                "buyWhere": f"{venue} · guía de acceso",
+                "buyLink": buy_url,
+                "buyLabel": "Cómo conseguirlo",
+                "buyNote": "Se detectó una guía o actualización pública con instrucciones de acceso, claim, TGE o lanzamiento.",
+                "hasDirectBuy": False,
+            }
         return {
             "buyWhere": f"{venue} · {stage or 'Prelaunch'}",
             "buyLink": buy_url,
