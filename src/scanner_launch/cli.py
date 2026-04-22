@@ -32,7 +32,7 @@ def build_parser() -> argparse.ArgumentParser:
     scan.add_argument("--no-save", action="store_true", help="No guardar snapshot JSON/CSV de esta corrida")
 
     prelaunch = subparsers.add_parser("prelaunch", help="Analizar proyectos previos al lanzamiento")
-    prelaunch.add_argument("--limit", type=int, default=20, help="Cantidad máxima de proyectos a evaluar")
+    prelaunch.add_argument("--limit", type=int, default=40, help="Cantidad máxima de proyectos a evaluar")
     prelaunch.add_argument("--no-save", action="store_true", help="No guardar snapshot JSON/CSV de esta corrida")
 
     web = subparsers.add_parser("web", help="Levantar dashboard HTML local")

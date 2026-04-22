@@ -46,7 +46,7 @@ class ScannerWebHandler(SimpleHTTPRequestHandler):
 
     def _handle_prelaunch(self, query: str) -> None:
         params = parse_qs(query)
-        limit = self._to_int(params.get("limit", ["20"])[0], 20)
+        limit = self._to_int(params.get("limit", ["40"])[0], 40)
         result = self.prelaunch_service.scan(limit=limit)
         self._send_json(to_dict(result))
 

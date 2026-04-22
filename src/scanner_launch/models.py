@@ -93,6 +93,8 @@ class PrelaunchProject:
     docsUrl: str
     buyPlatform: list[str] = field(default_factory=list)
     buyLink: str = "—"
+    buyLabel: str = "Ver proyecto"
+    hasDirectBuy: bool = False
     categories: list[str] = field(default_factory=list)
     investorsCount: int | None = None
     fundingUsd: str = "—"

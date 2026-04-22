@@ -11,7 +11,7 @@ class PrelaunchService:
     def __init__(self, provider: PrelaunchProvider | None = None) -> None:
         self.provider = provider or PrelaunchProvider()
 
-    def scan(self, limit: int = 20) -> PrelaunchResult:
+    def scan(self, limit: int = 40) -> PrelaunchResult:
         projects, warnings = self.provider.fetch_projects(limit=limit)
         enriched = [self._score_project(project) for project in projects]
         enriched.sort(key=lambda item: item.overallScore, reverse=True)
@@ -36,7 +36,8 @@ class PrelaunchService:
 
         launch_time = self._format_launch_time(project.get("launch_ts"), project.get("launchText"))
         launch_ago = self._format_launch_ago(project.get("launch_ts"))
-        buy_links = [link for link in [project.get("websiteUrl"), project.get("projectUrl"), project.get("docsUrl")] if link]
+        buy_link = project.get("buyUrl") or project.get("websiteUrl") or project.get("projectUrl") or project.get("docsUrl") or "—"
+        buy_label = project.get("buyLabel") or ("Comprar / participar" if project.get("buyUrl") else "Ver proyecto")
         buy_platform = [project.get("source") or "—"]
         if project.get("stage"):
             buy_platform.append(project.get("stage"))
@@ -57,7 +58,9 @@ class PrelaunchService:
             telegramUrl=project.get("telegramUrl") or "—",
             docsUrl=project.get("docsUrl") or "—",
             buyPlatform=buy_platform,
-            buyLink=buy_links[0] if buy_links else (project.get("projectUrl") or "—"),
+            buyLink=buy_link,
+            buyLabel=buy_label,
+            hasDirectBuy=bool(project.get("buyUrl")),
             categories=project.get("categories") or [],
             investorsCount=project.get("investorsCount"),
             fundingUsd=project.get("fundingUsd") or "—",
@@ -141,8 +144,10 @@ class PrelaunchService:
 
     def _score_access(self, project: dict) -> int:
         score = 5
-        if project.get("websiteUrl"):
-            score += 30
+        if project.get("buyUrl"):
+            score += 35
+        elif project.get("websiteUrl"):
+            score += 25
         if project.get("projectUrl"):
             score += 15
         if project.get("docsUrl"):
@@ -171,6 +176,8 @@ class PrelaunchService:
             red_flags.append("Sin website o landing verificable")
         else:
             green_flags.append("Tiene website o landing")
+        if project.get("buyUrl"):
+            green_flags.append("Tiene ruta directa de entrada o participación")
         if not project.get("docsUrl"):
             red_flags.append("Sin whitepaper/docs detectables")
         else:

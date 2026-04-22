@@ -39,6 +39,7 @@ Esta versión ya tiene dos líneas reales de trabajo conectadas:
 - hoy integra `ICO Analytics` y `CoinMarketCap Upcoming`,
 - estima fecha/stage de lanzamiento,
 - arma un scoring heurístico de legitimidad, readiness, hype y acceso,
+- detecta links de entrada/compra cuando la fuente los expone y hace fallback al sitio oficial cuando no,
 - y devuelve una señal operativa tipo `INTERESANTE / SEGUIR / CAUTELA / EVITAR`.
 
 Importante: el modo prelaunch no promete rentabilidad ni “predice” el listing. Sirve para filtrar mejor oportunidades previas al lanzamiento con evidencia pública verificable.
@@ -49,7 +50,7 @@ cd scanner-launch
 python3 main.py discover
 python3 main.py analyze BONK --chain solana
 python3 main.py scan --limit 20 --max-age-hours 24
-python3 main.py prelaunch --limit 20
+python3 main.py prelaunch --limit 40
 python3 main.py web --port 8765
 ```
 
@@ -75,7 +76,7 @@ python3 main.py scan --limit 20 --max-age-hours 24
 
 ### Prelaunch real
 ```bash
-python3 main.py prelaunch --limit 20
+python3 main.py prelaunch --limit 40
 ```
 
 ### Dashboard HTML local
@@ -90,7 +91,8 @@ Y en la UI elegís el modo `Prelaunch real` para ver:
 - cuándo sería el lanzamiento,
 - qué tan confiable parece el proyecto,
 - si conviene solo watchlist o podría valer la pena seguir el prelanzamiento,
-- y la proyección heurística del listing.
+- la proyección heurística del listing,
+- y un botón de acción directo para comprar/participar cuando exista, o entrar al sitio oficial del proyecto cuando no haya compra pública detectada.
 
 ## Próximo paso recomendado
 Expandir el scanner con más fuentes y persistencia:
