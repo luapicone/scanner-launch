@@ -3,82 +3,84 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Scanner Launch Dashboard</title>
+    <title>Crypto Launch Dashboard</title>
     <style>
       :root {
         color-scheme: dark;
         --bg: #0b1020;
-        --panel: #121a30;
+        --panel: rgba(18, 26, 48, 0.94);
         --panel-2: #1a2544;
         --text: #e8ecf8;
-        --muted: #99a4c0;
+        --muted: #98a3c2;
         --accent: #65d1ff;
-        --ok: #1fc77e;
-        --warn: #f5b83d;
-        --bad: #ff6b6b;
+        --ok: #35d48f;
+        --warn: #ffc857;
+        --bad: #ff7b7b;
       }
       * { box-sizing: border-box; }
       body {
         margin: 0;
         font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-        background: linear-gradient(180deg, #0b1020 0%, #111831 100%);
+        background: linear-gradient(180deg, #0b1020 0%, #111830 100%);
         color: var(--text);
       }
-      .wrap { max-width: 1400px; margin: 0 auto; padding: 24px; }
+      .wrap { max-width: 1500px; margin: 0 auto; padding: 24px; }
       h1 { margin: 0 0 6px; }
-      .sub { color: var(--muted); margin-bottom: 20px; }
-      .controls, .stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 12px;
-      }
+      .sub { color: var(--muted); margin-bottom: 16px; }
+      .grid { display: grid; gap: 12px; }
+      .controls, .stats { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
       .card {
-        background: rgba(18, 26, 48, 0.92);
+        background: var(--panel);
         border: 1px solid rgba(255,255,255,0.08);
         border-radius: 16px;
         padding: 16px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+        box-shadow: 0 16px 36px rgba(0,0,0,0.24);
       }
       label { display:block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
       input, select, button {
-        width: 100%; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
-        background: var(--panel-2); color: var(--text); padding: 10px 12px; font: inherit;
+        width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12);
+        background: var(--panel-2); color: var(--text); font: inherit;
       }
-      button { background: linear-gradient(135deg, #1677ff, #40c4ff); border: none; font-weight: 700; cursor: pointer; }
-      button.secondary { background: #243252; }
-      .actions { display:flex; gap: 10px; align-items:end; }
+      button { border: none; cursor: pointer; font-weight: 800; background: linear-gradient(135deg,#1d7eff,#40c4ff); }
+      button.secondary { background: #263557; }
+      .actions { display:flex; gap:10px; align-items:end; }
       .actions button { flex:1; }
-      .stats { margin: 18px 0; }
-      .stat-value { font-size: 26px; font-weight: 800; }
+      .stats { display:grid; gap:12px; margin: 18px 0; }
+      .stat-value { font-size: 28px; font-weight: 900; }
       .stat-label { color: var(--muted); font-size: 13px; }
+      .status { margin: 14px 0; color: var(--muted); }
       table { width: 100%; border-collapse: collapse; }
-      th, td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.07); text-align: left; vertical-align: top; }
-      th { color: var(--muted); font-size: 12px; position: sticky; top: 0; background: var(--panel); }
-      .table-wrap { overflow:auto; max-height: 70vh; }
-      .pill { display:inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; }
-      .pill.CONFIABLE, .pill.MUY\ CONFIABLE { background: rgba(31,199,126,.15); color: #7ef0b6; }
-      .pill.RIESGO\ MEDIO { background: rgba(245,184,61,.14); color: #ffd36a; }
-      .pill.ALTO\ RIESGO, .pill.SCAM { background: rgba(255,107,107,.14); color: #ff9b9b; }
+      th, td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.07); vertical-align: top; text-align: left; }
+      th { position: sticky; top: 0; background: var(--panel); color: var(--muted); font-size: 12px; }
+      .table-wrap { overflow:auto; max-height: 72vh; }
+      .pill { display:inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+      .pill.INTERESANTE, .pill.CONFIABLE, .pill.MUY-CONFIABLE { background: rgba(53,212,143,.14); color:#8ef0be; }
+      .pill.SEGUIR, .pill.RIESGO-MEDIO { background: rgba(255,200,87,.14); color:#ffd77a; }
+      .pill.CAUTELA { background: rgba(255,175,87,.14); color:#ffbf7f; }
+      .pill.ALTO-RIESGO, .pill.SCAM, .pill.EVITAR { background: rgba(255,123,123,.14); color:#ffabab; }
       .small { color: var(--muted); font-size: 12px; }
       .link { color: var(--accent); text-decoration: none; }
-      .flags { display:flex; flex-wrap:wrap; gap: 6px; }
+      .flags { display:flex; flex-wrap:wrap; gap:6px; }
       .flag { background: rgba(255,255,255,0.08); border-radius: 999px; padding: 4px 8px; font-size: 12px; }
-      .flag.good { color: #86efac; }
-      .flag.bad { color: #fca5a5; }
-      .status { margin: 14px 0; color: var(--muted); }
+      .flag.good { color:#8ef0be; }
+      .flag.bad { color:#ffabab; }
+      .muted { color: var(--muted); }
       .hidden { display:none; }
+      .topbar-note { margin-bottom: 16px; color: #d6def7; }
     </style>
   </head>
   <body>
     <div class="wrap">
-      <h1>Crypto Launch Scanner</h1>
-      <div class="sub">Dashboard local para ver launches, compra, riesgo y proyección heurística.</div>
+      <h1>Crypto Launch Dashboard</h1>
+      <div class="sub">Scanner visual para launches ya activos y proyectos pre-launch. La parte prelaunch usa fuentes públicas de calendarios y señal documental, no precio real de mercado.</div>
+      <div class="topbar-note">Para flips de listing, mirá especialmente el modo <strong>Prelaunch</strong>.</div>
 
-      <div class="controls card">
+      <div class="grid controls card">
         <div>
           <label>Modo</label>
           <select id="mode">
-            <option value="scan">Scan completo</option>
+            <option value="prelaunch">Prelaunch real</option>
+            <option value="scan">Scan lanzadas</option>
             <option value="discover">Solo discovery</option>
           </select>
         </div>
@@ -87,11 +89,11 @@
           <input id="limit" type="number" min="1" max="200" value="20" />
         </div>
         <div>
-          <label>Máx horas</label>
+          <label>Máx horas (solo scan/discover)</label>
           <input id="maxAgeHours" type="number" min="1" max="168" value="24" />
         </div>
         <div>
-          <label>Buscar token puntual</label>
+          <label>Analizar token puntual</label>
           <input id="token" type="text" placeholder="BONK / WIF / nombre" />
         </div>
         <div>
@@ -105,18 +107,17 @@
       </div>
 
       <div class="status" id="status">Listo.</div>
-
       <div class="stats" id="stats"></div>
 
       <div class="card table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Token</th>
-              <th>Riesgo</th>
+              <th>Proyecto / Token</th>
+              <th>Clasificación</th>
               <th>Score</th>
               <th>Lanzamiento</th>
-              <th>Compra</th>
+              <th>Entrada / Compra</th>
               <th>Proyección</th>
               <th>Flags</th>
             </tr>
@@ -130,7 +131,6 @@
       const rowsEl = document.getElementById('rows');
       const statsEl = document.getElementById('stats');
       const statusEl = document.getElementById('status');
-
       document.getElementById('runBtn').addEventListener('click', runMode);
       document.getElementById('analyzeBtn').addEventListener('click', analyzeToken);
 
@@ -140,7 +140,11 @@
         const maxAgeHours = document.getElementById('maxAgeHours').value;
         setStatus('Cargando...');
         try {
-          const res = await fetch(`/api/${mode}?limit=${encodeURIComponent(limit)}&maxAgeHours=${encodeURIComponent(maxAgeHours)}`);
+          let url = `/api/${mode}?limit=${encodeURIComponent(limit)}`;
+          if (mode !== 'prelaunch') {
+            url += `&maxAgeHours=${encodeURIComponent(maxAgeHours)}`;
+          }
+          const res = await fetch(url);
           const data = await res.json();
           render(mode, data);
           setStatus(`OK, fuente ${data.source || '—'}, fetchedAt ${data.fetchedAt || '—'}`);
@@ -168,23 +172,29 @@
       }
 
       function render(mode, data) {
-        const tokens = mode === 'analyze' ? [data] : (data.tokens || []);
-        renderStats(tokens);
-        rowsEl.innerHTML = tokens.map(renderRow).join('');
+        let items = [];
+        if (mode === 'analyze') items = [data];
+        else if (mode === 'prelaunch') items = data.projects || [];
+        else items = data.tokens || [];
+        renderStats(mode, items);
+        rowsEl.innerHTML = items.map(item => renderRow(mode, item)).join('');
       }
 
-      function renderStats(tokens) {
+      function renderStats(mode, items) {
         const totals = {
-          total: tokens.length,
-          confiables: tokens.filter(t => ['CONFIABLE', 'MUY CONFIABLE'].includes(t.riskLevel)).length,
-          medios: tokens.filter(t => t.riskLevel === 'RIESGO MEDIO').length,
-          riesgosos: tokens.filter(t => ['ALTO RIESGO', 'SCAM'].includes(t.riskLevel)).length,
+          total: items.length,
+          fuertes: items.filter(t => ['INTERESANTE', 'CONFIABLE', 'MUY CONFIABLE'].includes(t.riskLevel)).length,
+          medios: items.filter(t => ['SEGUIR', 'RIESGO MEDIO', 'CAUTELA'].includes(t.riskLevel)).length,
+          riesgosos: items.filter(t => ['ALTO RIESGO', 'SCAM', 'EVITAR'].includes(t.riskLevel)).length,
         };
+        const labels = mode === 'prelaunch'
+          ? ['Proyectos', 'Interesantes', 'Seguir/cautela', 'Evitar/riesgo']
+          : ['Tokens', 'Confiables', 'Medios', 'Altos/scam'];
         statsEl.innerHTML = [
-          statCard('Tokens', totals.total),
-          statCard('Confiables', totals.confiables),
-          statCard('Riesgo medio', totals.medios),
-          statCard('Altos/scam', totals.riesgosos),
+          statCard(labels[0], totals.total),
+          statCard(labels[1], totals.fuertes),
+          statCard(labels[2], totals.medios),
+          statCard(labels[3], totals.riesgosos),
         ].join('');
       }
 
@@ -192,33 +202,77 @@
         return `<div class="card"><div class="stat-value">${value}</div><div class="stat-label">${label}</div></div>`;
       }
 
-      function renderRow(token) {
-        const risk = token.riskLevel || '—';
-        const score = token.overallScore ?? '—';
-        const launchTime = token.launchTime || '—';
-        const launchAgo = token.launchAgo || '—';
-        const buyPlatform = (token.buyPlatform || []).join(', ') || '—';
-        const buyLink = token.buyLink || '—';
-        const projection = token.projection || token.analysis || '—';
-        const green = (token.greenFlags || []).map(f => `<span class="flag good">${escapeHtml(f)}</span>`).join('');
-        const red = (token.redFlags || []).map(f => `<span class="flag bad">${escapeHtml(f)}</span>`).join('');
+      function renderRow(mode, item) {
+        if (mode === 'prelaunch') return renderPrelaunchRow(item);
+        return renderLaunchRow(item);
+      }
+
+      function renderPrelaunchRow(item) {
+        const flagsGood = (item.greenFlags || []).map(f => `<span class="flag good">${escapeHtml(f)}</span>`).join('');
+        const flagsBad = (item.redFlags || []).map(f => `<span class="flag bad">${escapeHtml(f)}</span>`).join('');
+        const links = [
+          item.buyLink && item.buyLink !== '—' ? `<a class="link" href="${safeUrl(item.buyLink)}" target="_blank" rel="noopener noreferrer">Ruta principal</a>` : '',
+          item.projectUrl && item.projectUrl !== '—' ? `<a class="link" href="${safeUrl(item.projectUrl)}" target="_blank" rel="noopener noreferrer">Fuente</a>` : '',
+          item.docsUrl && item.docsUrl !== '—' ? `<a class="link" href="${safeUrl(item.docsUrl)}" target="_blank" rel="noopener noreferrer">Docs</a>` : ''
+        ].filter(Boolean).join(' · ');
         return `
           <tr>
             <td>
-              <strong>${escapeHtml(token.name || token.symbol || '—')}</strong><br>
-              <span class="small">${escapeHtml(token.symbol || '—')} • ${escapeHtml(token.chain || '—')}</span>
+              <strong>${escapeHtml(item.name || '—')}</strong><br>
+              <span class="small">${escapeHtml(item.symbol || '—')} • ${escapeHtml(item.chain || '—')} • ${escapeHtml(item.source || '—')}</span><br>
+              <span class="small">Stage: ${escapeHtml(item.stage || '—')}</span>
             </td>
-            <td><span class="pill ${risk}">${escapeHtml(risk)}</span></td>
-            <td><strong>${score}</strong></td>
-            <td>${escapeHtml(launchTime)}<br><span class="small">${escapeHtml(launchAgo)}</span></td>
-            <td>${escapeHtml(buyPlatform)}<br>${buyLink !== '—' ? `<a class="link" href="${buyLink}" target="_blank">Abrir par</a>` : '<span class="small">—</span>'}</td>
-            <td>${escapeHtml(projection)}</td>
-            <td><div class="flags">${green}${red || '<span class="small">—</span>'}</div></td>
+            <td><span class="pill ${pillClass(item.riskLevel)}">${escapeHtml(item.riskLevel || '—')}</span><br><span class="small">${escapeHtml(item.buyVerdict || '—')}</span></td>
+            <td>
+              <strong>${item.overallScore ?? '—'}</strong><br>
+              <span class="small">Leg ${escapeHtml(item.scores?.legitimidad ?? '—')} / Read ${escapeHtml(item.scores?.readiness ?? '—')}</span>
+            </td>
+            <td>
+              ${escapeHtml(item.launchTime || '—')}<br>
+              <span class="small">${escapeHtml(item.launchAgo || '—')}</span>
+            </td>
+            <td>
+              ${escapeHtml((item.buyPlatform || []).join(', ') || '—')}<br>
+              <span class="small">${links || 'Sin ruta clara'}</span>
+            </td>
+            <td>${escapeHtml(item.projection || item.analysis || '—')}</td>
+            <td><div class="flags">${flagsGood}${flagsBad || '<span class="small">—</span>'}</div></td>
+          </tr>
+        `;
+      }
+
+      function renderLaunchRow(item) {
+        const flagsGood = (item.greenFlags || []).map(f => `<span class="flag good">${escapeHtml(f)}</span>`).join('');
+        const flagsBad = (item.redFlags || []).map(f => `<span class="flag bad">${escapeHtml(f)}</span>`).join('');
+        return `
+          <tr>
+            <td>
+              <strong>${escapeHtml(item.name || item.symbol || '—')}</strong><br>
+              <span class="small">${escapeHtml(item.symbol || '—')} • ${escapeHtml(item.chain || '—')}</span>
+            </td>
+            <td><span class="pill ${pillClass(item.riskLevel)}">${escapeHtml(item.riskLevel || '—')}</span></td>
+            <td><strong>${item.overallScore ?? '—'}</strong></td>
+            <td>${escapeHtml(item.launchTime || '—')}<br><span class="small">${escapeHtml(item.launchAgo || '—')}</span></td>
+            <td>${escapeHtml((item.buyPlatform || []).join(', ') || '—')}<br>${item.buyLink && item.buyLink !== '—' ? `<a class="link" href="${safeUrl(item.buyLink)}" target="_blank" rel="noopener noreferrer">Abrir par</a>` : '<span class="small">—</span>'}</td>
+            <td>${escapeHtml(item.projection || item.analysis || '—')}</td>
+            <td><div class="flags">${flagsGood}${flagsBad || '<span class="small">—</span>'}</div></td>
           </tr>
         `;
       }
 
       function setStatus(text) { statusEl.textContent = text; }
+      function pillClass(text) {
+        return escapeHtml(String(text || '—').replaceAll(' ', '-'));
+      }
+      function safeUrl(value) {
+        try {
+          const url = new URL(String(value || ''), window.location.origin);
+          if (!['http:', 'https:'].includes(url.protocol)) return '#';
+          return url.href.replaceAll('"', '%22');
+        } catch {
+          return '#';
+        }
+      }
       function escapeHtml(text) {
         return String(text)
           .replaceAll('&', '&amp;')

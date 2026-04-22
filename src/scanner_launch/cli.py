@@ -7,6 +7,7 @@ from scanner_launch.models import to_dict
 from scanner_launch.services.discovery import DiscoveryService
 from scanner_launch.services.risk import RiskAnalyzerService
 from scanner_launch.services.scan import BatchScanService
+from scanner_launch.services.prelaunch import PrelaunchService
 from scanner_launch.storage import SnapshotStore
 from scanner_launch.webapp import serve
 
@@ -29,6 +30,10 @@ def build_parser() -> argparse.ArgumentParser:
     scan.add_argument("--limit", type=int, default=20, help="Cantidad máxima de tokens a evaluar")
     scan.add_argument("--max-age-hours", type=int, default=24, help="Ventana máxima de lanzamiento")
     scan.add_argument("--no-save", action="store_true", help="No guardar snapshot JSON/CSV de esta corrida")
+
+    prelaunch = subparsers.add_parser("prelaunch", help="Analizar proyectos previos al lanzamiento")
+    prelaunch.add_argument("--limit", type=int, default=20, help="Cantidad máxima de proyectos a evaluar")
+    prelaunch.add_argument("--no-save", action="store_true", help="No guardar snapshot JSON/CSV de esta corrida")
 
     web = subparsers.add_parser("web", help="Levantar dashboard HTML local")
     web.add_argument("--host", default="127.0.0.1", help="Host para servir la web")
@@ -68,6 +73,16 @@ def main() -> None:
         payload = to_dict(result)
         if not args.no_save:
             snapshot_json_path, snapshot_csv_path = store.save("scan", result)
+            payload["snapshotPath"] = str(snapshot_json_path)
+            payload["snapshotCsvPath"] = str(snapshot_csv_path)
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return
+
+    if args.command == "prelaunch":
+        result = PrelaunchService().scan(limit=args.limit)
+        payload = to_dict(result)
+        if not args.no_save:
+            snapshot_json_path, snapshot_csv_path = store.save("prelaunch", result)
             payload["snapshotPath"] = str(snapshot_json_path)
             payload["snapshotCsvPath"] = str(snapshot_csv_path)
         print(json.dumps(payload, ensure_ascii=False, indent=2))

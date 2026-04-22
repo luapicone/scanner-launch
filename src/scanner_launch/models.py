@@ -76,6 +76,47 @@ class BatchScanResult:
 
 
 @dataclass
+class PrelaunchProject:
+    id: str
+    name: str
+    symbol: str
+    source: str
+    sourceUrl: str
+    projectUrl: str
+    chain: str
+    stage: str
+    launchTime: str
+    launchAgo: str
+    websiteUrl: str
+    twitterUrl: str
+    telegramUrl: str
+    docsUrl: str
+    buyPlatform: list[str] = field(default_factory=list)
+    buyLink: str = "—"
+    categories: list[str] = field(default_factory=list)
+    investorsCount: int | None = None
+    fundingUsd: str = "—"
+    scores: dict[str, int] = field(default_factory=dict)
+    overallScore: int = 0
+    riskLevel: str = "—"
+    redFlags: list[str] = field(default_factory=list)
+    greenFlags: list[str] = field(default_factory=list)
+    projection: str = "—"
+    buyVerdict: str = "—"
+    analysis: str = "—"
+    fetchedAt: str | None = None
+
+
+@dataclass
+class PrelaunchResult:
+    projects: list[PrelaunchProject] = field(default_factory=list)
+    source: str = "—"
+    fetchedAt: str = "—"
+    error: str | None = None
+    warnings: list[str] = field(default_factory=list)
+
+
+@dataclass
 class SearchHit:
     title: str
     url: str

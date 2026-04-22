@@ -29,10 +29,17 @@ class SnapshotStore:
         return json_path, csv_path
 
     def _write_csv(self, path: Path, command: str, data: dict[str, Any]) -> None:
-        if command == "discover":
+        if command in {"discover", "scan"}:
             rows = data.get("tokens") or []
             if not rows:
                 rows = [{k: v for k, v in data.items() if k != "tokens"}]
+            self._write_rows(path, rows)
+            return
+
+        if command == "prelaunch":
+            rows = data.get("projects") or []
+            if not rows:
+                rows = [{k: v for k, v in data.items() if k != "projects"}]
             self._write_rows(path, rows)
             return
 

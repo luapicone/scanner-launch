@@ -10,6 +10,7 @@ from scanner_launch.models import to_dict
 from scanner_launch.services.risk import RiskAnalyzerService
 from scanner_launch.services.discovery import DiscoveryService
 from scanner_launch.services.scan import BatchScanService
+from scanner_launch.services.prelaunch import PrelaunchService
 
 
 class ScannerWebHandler(SimpleHTTPRequestHandler):
@@ -17,12 +18,16 @@ class ScannerWebHandler(SimpleHTTPRequestHandler):
         self.discovery_service = DiscoveryService()
         self.risk_service = RiskAnalyzerService()
         self.scan_service = BatchScanService(self.discovery_service, self.risk_service)
+        self.prelaunch_service = PrelaunchService()
         super().__init__(*args, directory=directory, **kwargs)
 
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
         if parsed.path == "/api/scan":
             self._handle_scan(parsed.query)
+            return
+        if parsed.path == "/api/prelaunch":
+            self._handle_prelaunch(parsed.query)
             return
         if parsed.path == "/api/discover":
             self._handle_discover(parsed.query)
@@ -37,6 +42,12 @@ class ScannerWebHandler(SimpleHTTPRequestHandler):
         limit = self._to_int(params.get("limit", ["20"])[0], 20)
         max_age_hours = self._to_int(params.get("maxAgeHours", ["24"])[0], 24)
         result = self.scan_service.scan(limit=limit, max_age_hours=max_age_hours)
+        self._send_json(to_dict(result))
+
+    def _handle_prelaunch(self, query: str) -> None:
+        params = parse_qs(query)
+        limit = self._to_int(params.get("limit", ["20"])[0], 20)
+        result = self.prelaunch_service.scan(limit=limit)
         self._send_json(to_dict(result))
 
     def _handle_discover(self, query: str) -> None:
