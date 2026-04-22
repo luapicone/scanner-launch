@@ -6,6 +6,7 @@ import json
 from scanner_launch.models import to_dict
 from scanner_launch.services.discovery import DiscoveryService
 from scanner_launch.services.risk import RiskAnalyzerService
+from scanner_launch.services.scan import BatchScanService
 from scanner_launch.storage import SnapshotStore
 
 
@@ -22,6 +23,11 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument("token", help="Nombre o símbolo del token")
     analyze.add_argument("--chain", help="Blockchain sugerida", default=None)
     analyze.add_argument("--no-save", action="store_true", help="No guardar snapshot JSON de esta corrida")
+
+    scan = subparsers.add_parser("scan", help="Descubrir y evaluar todos los tokens de la corrida")
+    scan.add_argument("--limit", type=int, default=20, help="Cantidad máxima de tokens a evaluar")
+    scan.add_argument("--max-age-hours", type=int, default=24, help="Ventana máxima de lanzamiento")
+    scan.add_argument("--no-save", action="store_true", help="No guardar snapshot JSON/CSV de esta corrida")
 
     return parser
 
@@ -47,6 +53,16 @@ def main() -> None:
         payload = to_dict(result)
         if not args.no_save:
             snapshot_json_path, snapshot_csv_path = store.save("analyze", result)
+            payload["snapshotPath"] = str(snapshot_json_path)
+            payload["snapshotCsvPath"] = str(snapshot_csv_path)
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return
+
+    if args.command == "scan":
+        result = BatchScanService().scan(limit=args.limit, max_age_hours=args.max_age_hours)
+        payload = to_dict(result)
+        if not args.no_save:
+            snapshot_json_path, snapshot_csv_path = store.save("scan", result)
             payload["snapshotPath"] = str(snapshot_json_path)
             payload["snapshotCsvPath"] = str(snapshot_csv_path)
         print(json.dumps(payload, ensure_ascii=False, indent=2))

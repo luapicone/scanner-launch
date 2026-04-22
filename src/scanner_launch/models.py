@@ -56,6 +56,23 @@ class RiskAnalysisResult:
     analysis: str = ""
     tokenId: str | None = None
     fetchedAt: str | None = None
+    name: str | None = None
+    symbol: str | None = None
+    chain: str | None = None
+    launchTime: str | None = None
+    launchAgo: str | None = None
+    buyPlatform: list[str] = field(default_factory=list)
+    buyLink: str | None = None
+    projection: str | None = None
+
+
+@dataclass
+class BatchScanResult:
+    tokens: list[dict[str, Any]] = field(default_factory=list)
+    source: str = "—"
+    fetchedAt: str = "—"
+    error: str | None = None
+    warnings: list[str] = field(default_factory=list)
 
 
 @dataclass

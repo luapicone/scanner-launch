@@ -38,9 +38,10 @@ Por ahora el discovery real sale de DexScreener. El análisis de riesgo ya usa d
 cd scanner-launch
 python3 main.py discover
 python3 main.py analyze BONK --chain solana
+python3 main.py scan --limit 20 --max-age-hours 24
 ```
 
-Cada corrida guarda snapshots JSON y CSV automáticos en `outputs/discover/...` o `outputs/analyze/...`.
+Cada corrida guarda snapshots JSON y CSV automáticos en `outputs/discover/...`, `outputs/analyze/...` o `outputs/scan/...`.
 Usá `--no-save` si no querés persistir esa ejecución.
 
 ## Ejemplos
@@ -55,9 +56,14 @@ python3 main.py analyze WIF --chain solana
 python3 main.py analyze BONK --chain solana
 ```
 
+### Scan completo de la corrida
+```bash
+python3 main.py scan --limit 20 --max-age-hours 24
+```
+
 ## Próximo paso recomendado
 Expandir el scanner con más fuentes y persistencia:
 - CoinGecko
 - validación híbrida con búsqueda web + extracción por URL
 - enriquecer scoring con más señales onchain/social y auditorías externas
-- más afinado del análisis para tokens gigantes/multimercado
+- segunda fuente como CoinGecko para enriquecer metadata y validación

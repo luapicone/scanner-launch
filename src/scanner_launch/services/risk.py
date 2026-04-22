@@ -29,6 +29,10 @@ class RiskAnalyzerService:
                 greenFlags=[],
                 verdict="Sin par verificable en una DEX reconocida dentro de esta integración. Riesgo extremadamente alto.",
                 analysis="El analizador no encontró un par usable para este token en DexScreener con los datos disponibles en esta corrida. Sin mercado verificable, no conviene tratarlo como oportunidad operable.",
+                name=request.token,
+                symbol=request.token,
+                chain=request.chain,
+                projection="Sin proyección confiable por falta de mercado verificable.",
             )
 
         pair_address = str(pair.get("pairAddress") or "")
@@ -95,6 +99,8 @@ class RiskAnalyzerService:
         )
 
         base_token = pair.get("baseToken") or {}
+        launch_time = self._format_launch_time(pair_created_at)
+        launch_ago = self._format_launch_ago(pair_created_at)
         return RiskAnalysisResult(
             tokenId=f"{str(base_token.get('symbol') or request.token).lower()}-{chain_id.lower()}",
             fetchedAt=now_art(datetime.now(settings.timezone)),
@@ -105,6 +111,14 @@ class RiskAnalyzerService:
             greenFlags=green_flags,
             verdict=verdict,
             analysis=analysis,
+            name=str(base_token.get('name') or request.token),
+            symbol=str(base_token.get('symbol') or request.token),
+            chain=chain_id,
+            launchTime=launch_time,
+            launchAgo=launch_ago,
+            buyPlatform=[str(pair.get('dexId') or '—')],
+            buyLink=str(pair.get('url') or '—'),
+            projection=self._build_projection(risk_level, overall_score, liquidity_usd, volume_usd),
         )
 
     def _select_pair(self, pairs: list[dict], token: str, chain: str | None) -> dict | None:
@@ -315,6 +329,30 @@ class RiskAnalyzerService:
         if pair_created_at is None:
             return None
         return max(0, (datetime.now(settings.timezone).timestamp() * 1000 - pair_created_at) / 3_600_000)
+
+    def _format_launch_time(self, pair_created_at: float | None) -> str:
+        if pair_created_at is None:
+            return "—"
+        return datetime.fromtimestamp(pair_created_at / 1000, tz=settings.timezone).strftime("%d/%m/%Y %H:%M:%S")
+
+    def _format_launch_ago(self, pair_created_at: float | None) -> str:
+        if pair_created_at is None:
+            return "—"
+        age_hours = max(0, (datetime.now(settings.timezone).timestamp() * 1000 - pair_created_at) / 3_600_000)
+        if age_hours < 1:
+            return f"hace {max(1, int(round(age_hours * 60)))} minutos"
+        hours = int(age_hours)
+        minutes = int(round((age_hours - hours) * 60))
+        return f"hace {hours}h {minutes}m" if minutes > 0 else f"hace {hours} horas"
+
+    def _build_projection(self, risk_level: str, overall_score: int, liquidity_usd: float | None, volume_usd: float | None) -> str:
+        if liquidity_usd is None or volume_usd is None:
+            return "Proyección incierta: faltan datos clave del mercado en esta corrida."
+        if risk_level in {"SCAM", "ALTO RIESGO"}:
+            return "Proyección especulativa y frágil: si se opera, sería solo como trade de altísimo riesgo, no como inversión."
+        if overall_score >= 70:
+            return "Proyección favorable a corto plazo si sostiene liquidez y actividad, pero sigue siendo un activo de riesgo alto."
+        return "Proyección mixta: puede tener tracción de corto plazo, pero necesita confirmar liquidez, volumen y comunidad antes de ganar confianza."
 
     def _to_float(self, value) -> float | None:
         try:
