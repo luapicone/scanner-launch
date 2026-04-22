@@ -336,6 +336,11 @@ class PrelaunchProvider:
             r"\btrade\b",
             r"\bsale\b",
             r"\bauction\b",
+            r"\bjoin\b",
+            r"\bwhitelist\b",
+            r"\bwaitlist\b",
+            r"\bregister\b",
+            r"\binvite\b",
         ]
         stage_low = (stage or "").lower()
         best_url: str | None = None
@@ -445,6 +450,8 @@ class PrelaunchProvider:
             return "Claim / acceso"
         if any(token in low for token in ["sale", "auction", "launchpad", "participate", "purchase", "buy"]):
             return "Comprar / participar"
+        if any(token in low for token in ["join", "whitelist", "waitlist", "register", "invite"]):
+            return "Registrarse / Whitelist"
         if any(token in low for token in ["trade", "swap"]):
             return "Comprar / trade"
         if "tge" in stage_low or "auction" in stage_low or "sale" in stage_low:
