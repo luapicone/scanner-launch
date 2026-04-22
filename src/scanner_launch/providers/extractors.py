@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from scanner_launch.buy_links import build_live_buy_target, prettify_dex
 from scanner_launch.config import settings
 from scanner_launch.models import SearchHit, TokenRecord, now_art
 
@@ -35,6 +36,9 @@ class TokenExtractor:
             chain = str(profile.get("chainId") or pair.get("chainId") or "—")
             name = str(base_token.get("name") or "—")
             symbol = str(base_token.get("symbol") or "—")
+            token_address = str(base_token.get("address") or profile.get("tokenAddress") or "")
+            market_url = str(pair.get("url") or profile.get("url") or "—")
+            buy_target = build_live_buy_target(chain, token_address, dex_id, market_url)
             token_id = self._build_token_id(name, symbol, chain)
             if token_id in seen_ids:
                 continue
@@ -52,8 +56,12 @@ class TokenExtractor:
                     volume24h=self._format_money((pair.get("volume") or {}).get("h24")),
                     launchTime=now_art(launch_dt),
                     launchAgo=self._format_ago(age_hours),
-                    buyPlatform=[dex_id] if dex_id != "—" else [],
-                    buyLink=str(pair.get("url") or profile.get("url") or "—"),
+                    buyPlatform=[prettify_dex(dex_id)] if dex_id != "—" else [],
+                    buyLink=str(buy_target.get("buyLink") or "—"),
+                    buyWhere=str(buy_target.get("buyWhere") or "—"),
+                    buyLabel=str(buy_target.get("buyLabel") or "Abrir mercado"),
+                    buyNote=str(buy_target.get("buyNote") or "—"),
+                    hasDirectBuy=bool(buy_target.get("hasDirectBuy")),
                     website="sí" if websites else "no",
                     twitter="sí" if "twitter" in socials else "no",
                     telegram="sí" if "telegram" in socials else "no",

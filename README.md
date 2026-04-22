@@ -39,7 +39,8 @@ Esta versión ya tiene dos líneas reales de trabajo conectadas:
 - hoy integra `ICO Analytics` y `CoinMarketCap Upcoming`,
 - estima fecha/stage de lanzamiento,
 - arma un scoring heurístico de legitimidad, readiness, hype y acceso,
-- detecta links de entrada/compra cuando la fuente los expone y hace fallback al sitio oficial cuando no,
+- detecta dónde comprar o entrar exactamente cuando la fuente o la chain permiten resolverlo,
+- cuando no hay compra pública directa detectable, cae honestamente al sitio oficial o a la fuente original,
 - y devuelve una señal operativa tipo `INTERESANTE / SEGUIR / CAUTELA / EVITAR`.
 
 Importante: el modo prelaunch no promete rentabilidad ni “predice” el listing. Sirve para filtrar mejor oportunidades previas al lanzamiento con evidencia pública verificable.
@@ -92,7 +93,9 @@ Y en la UI elegís el modo `Prelaunch real` para ver:
 - qué tan confiable parece el proyecto,
 - si conviene solo watchlist o podría valer la pena seguir el prelanzamiento,
 - la proyección heurística del listing,
-- y un botón de acción directo para comprar/participar cuando exista, o entrar al sitio oficial del proyecto cuando no haya compra pública detectada.
+- una sección explícita de **dónde comprar**,
+- un botón directo a la ruta de compra/participación cuando se puede resolver,
+- o un fallback honesto al sitio oficial/fuente cuando todavía no hay compra pública detectada.
 
 ## Próximo paso recomendado
 Expandir el scanner con más fuentes y persistencia:

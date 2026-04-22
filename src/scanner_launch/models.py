@@ -19,6 +19,10 @@ class TokenRecord:
     launchAgo: str = "—"
     buyPlatform: list[str] = field(default_factory=list)
     buyLink: str = "—"
+    buyWhere: str = "—"
+    buyLabel: str = "Abrir mercado"
+    buyNote: str = "—"
+    hasDirectBuy: bool = False
     website: str = "no"
     twitter: str = "no"
     telegram: str = "no"
@@ -63,6 +67,10 @@ class RiskAnalysisResult:
     launchAgo: str | None = None
     buyPlatform: list[str] = field(default_factory=list)
     buyLink: str | None = None
+    buyWhere: str | None = None
+    buyLabel: str | None = None
+    buyNote: str | None = None
+    hasDirectBuy: bool = False
     projection: str | None = None
 
 
@@ -93,7 +101,9 @@ class PrelaunchProject:
     docsUrl: str
     buyPlatform: list[str] = field(default_factory=list)
     buyLink: str = "—"
+    buyWhere: str = "—"
     buyLabel: str = "Ver proyecto"
+    buyNote: str = "—"
     hasDirectBuy: bool = False
     categories: list[str] = field(default_factory=list)
     investorsCount: int | None = None

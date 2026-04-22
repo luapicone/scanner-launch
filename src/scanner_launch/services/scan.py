@@ -34,8 +34,12 @@ class BatchScanService:
             item.setdefault("chain", token.chain)
             item["launchTime"] = token.launchTime
             item["launchAgo"] = token.launchAgo
-            item["buyPlatform"] = token.buyPlatform
-            item["buyLink"] = token.buyLink
+            item["buyPlatform"] = item.get("buyPlatform") or token.buyPlatform
+            item["buyLink"] = item.get("buyLink") or token.buyLink
+            item["buyWhere"] = item.get("buyWhere") or token.buyWhere
+            item["buyLabel"] = item.get("buyLabel") or token.buyLabel
+            item["buyNote"] = item.get("buyNote") or token.buyNote
+            item["hasDirectBuy"] = bool(item.get("hasDirectBuy") or token.hasDirectBuy)
             evaluated.append(item)
 
         evaluated.sort(key=lambda item: item.get("overallScore", 0), reverse=True)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from scanner_launch.buy_links import build_live_buy_target, prettify_dex
 from scanner_launch.config import settings
 from scanner_launch.models import AnalyzeRequest, RiskAnalysisResult, RiskScores, now_art
 from scanner_launch.providers.search import SearchProvider
@@ -101,6 +102,12 @@ class RiskAnalyzerService:
         base_token = pair.get("baseToken") or {}
         launch_time = self._format_launch_time(pair_created_at)
         launch_ago = self._format_launch_ago(pair_created_at)
+        buy_target = build_live_buy_target(
+            chain_id,
+            str(base_token.get('address') or ''),
+            str(pair.get('dexId') or ''),
+            str(pair.get('url') or '—'),
+        )
         return RiskAnalysisResult(
             tokenId=f"{str(base_token.get('symbol') or request.token).lower()}-{chain_id.lower()}",
             fetchedAt=now_art(datetime.now(settings.timezone)),
@@ -116,8 +123,12 @@ class RiskAnalyzerService:
             chain=chain_id,
             launchTime=launch_time,
             launchAgo=launch_ago,
-            buyPlatform=[str(pair.get('dexId') or '—')],
-            buyLink=str(pair.get('url') or '—'),
+            buyPlatform=[prettify_dex(str(pair.get('dexId') or '—'))],
+            buyLink=str(buy_target.get('buyLink') or '—'),
+            buyWhere=str(buy_target.get('buyWhere') or '—'),
+            buyLabel=str(buy_target.get('buyLabel') or 'Abrir mercado'),
+            buyNote=str(buy_target.get('buyNote') or '—'),
+            hasDirectBuy=bool(buy_target.get('hasDirectBuy')),
             projection=self._build_projection(risk_level, overall_score, liquidity_usd, volume_usd),
         )
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from scanner_launch.buy_links import build_prelaunch_buy_target
 from scanner_launch.config import settings
 from scanner_launch.models import PrelaunchProject, PrelaunchResult, now_art
 from scanner_launch.providers.prelaunch import PrelaunchProvider
@@ -36,8 +37,16 @@ class PrelaunchService:
 
         launch_time = self._format_launch_time(project.get("launch_ts"), project.get("launchText"))
         launch_ago = self._format_launch_ago(project.get("launch_ts"))
-        buy_link = project.get("buyUrl") or project.get("websiteUrl") or project.get("projectUrl") or project.get("docsUrl") or "—"
-        buy_label = project.get("buyLabel") or ("Comprar / participar" if project.get("buyUrl") else "Ver proyecto")
+        buy_target = build_prelaunch_buy_target(
+            project.get("buyUrl"),
+            project.get("websiteUrl"),
+            project.get("projectUrl"),
+            project.get("stage"),
+        )
+        buy_link = str(buy_target.get("buyLink") or "—")
+        buy_label = str(buy_target.get("buyLabel") or ("Comprar / participar" if project.get("buyUrl") else "Ver proyecto"))
+        buy_where = str(buy_target.get("buyWhere") or "—")
+        buy_note = str(buy_target.get("buyNote") or "—")
         buy_platform = [project.get("source") or "—"]
         if project.get("stage"):
             buy_platform.append(project.get("stage"))
@@ -59,8 +68,10 @@ class PrelaunchService:
             docsUrl=project.get("docsUrl") or "—",
             buyPlatform=buy_platform,
             buyLink=buy_link,
+            buyWhere=buy_where,
             buyLabel=buy_label,
-            hasDirectBuy=bool(project.get("buyUrl")),
+            buyNote=buy_note,
+            hasDirectBuy=bool(buy_target.get("hasDirectBuy")),
             categories=project.get("categories") or [],
             investorsCount=project.get("investorsCount"),
             fundingUsd=project.get("fundingUsd") or "—",

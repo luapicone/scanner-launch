@@ -471,6 +471,28 @@
         line-height: 1.6;
       }
 
+      .buy-box {
+        margin-top: 8px;
+        padding: 14px;
+        border-radius: 18px;
+        background: rgba(102, 217, 255, 0.06);
+        border: 1px solid rgba(102, 217, 255, 0.12);
+      }
+
+      .buy-box strong {
+        display: block;
+        font-size: 15px;
+        color: #f2f7ff;
+      }
+
+      .buy-box span {
+        display: block;
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
       .tags, .flags {
         display: flex;
         flex-wrap: wrap;
@@ -802,6 +824,18 @@
         return renderLaunchCard(item);
       }
 
+      function renderBuyBox(item, fallbackTitle) {
+        const title = item.buyWhere || fallbackTitle || 'Compra no detectada';
+        const note = item.buyNote || 'No encontré una ruta concreta de compra en esta corrida.';
+        return `
+          <div class="section-title">Dónde comprar</div>
+          <div class="buy-box">
+            <strong>${escapeHtml(title)}</strong>
+            <span>${escapeHtml(note)}</span>
+          </div>
+        `;
+      }
+
       function renderPrelaunchCard(item) {
         const tags = (item.categories || []).slice(0, 5).map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('');
         const flags = [
@@ -847,6 +881,8 @@
             </div>
 
             ${tags ? `<div class="section-title">Categorías</div><div class="tags">${tags}</div>` : ''}
+
+            ${renderBuyBox(item, 'Compra prelaunch no detectada')}
 
             <div class="section-title">Proyección</div>
             <div class="copy">${escapeHtml(item.projection || item.analysis || '—')}</div>
@@ -908,6 +944,8 @@
               </div>
             </div>
 
+            ${renderBuyBox(item, 'Mercado detectado')}
+
             <div class="section-title">Análisis</div>
             <div class="copy">${escapeHtml(item.projection || item.analysis || item.verdict || '—')}</div>
 
@@ -915,7 +953,7 @@
             <div class="flags">${flags || '<span class="tiny">Sin flags destacados.</span>'}</div>
 
             <div class="actions-row">
-              ${renderActionLink(item.buyLink, 'Comprar / abrir mercado', true)}
+              ${renderActionLink(item.buyLink, item.buyLabel || 'Comprar / abrir mercado', true)}
               ${renderActionLink(item.sourceUrl, 'Fuente', false)}
             </div>
           </article>
