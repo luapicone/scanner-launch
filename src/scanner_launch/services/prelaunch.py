@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from datetime import datetime
+import re
+from datetime import datetime, timezone
+from urllib.request import Request, urlopen
 
 from scanner_launch.buy_links import build_prelaunch_buy_target
 from scanner_launch.config import settings
@@ -9,12 +11,18 @@ from scanner_launch.providers.prelaunch import PrelaunchProvider
 
 
 class PrelaunchService:
+    OFFICIAL_LAUNCH_OVERRIDES = {
+        "wingbits": int(datetime(2026, 4, 22, 15, 0, tzinfo=timezone.utc).timestamp() * 1000),
+    }
+
     def __init__(self, provider: PrelaunchProvider | None = None) -> None:
         self.provider = provider or PrelaunchProvider()
 
     def scan(self, limit: int = 40, min_score: int = 60, future_only: bool = True, source_limit: int | None = None) -> PrelaunchResult:
         fetch_limit = max(limit * 4, 120, source_limit or 0)
         projects, warnings = self.provider.fetch_projects(limit=fetch_limit)
+        projects, verification_warnings = self._drop_launched_projects(projects)
+        warnings.extend(verification_warnings)
         enriched = [self._score_project(project) for project in projects]
         if future_only:
             enriched = [item for item in enriched if self._launch_timestamp(item.launchTime) is None or self._launch_timestamp(item.launchTime) >= datetime.now(settings.timezone).timestamp()]
@@ -267,4 +275,67 @@ class PrelaunchService:
         try:
             return datetime.strptime(launch_time, "%d/%m/%Y %H:%M:%S").replace(tzinfo=settings.timezone).timestamp()
         except ValueError:
+            return None
+
+    def _drop_launched_projects(self, projects: list[dict]) -> tuple[list[dict], list[str]]:
+        filtered: list[dict] = []
+        warnings: list[str] = []
+        now_ms = int(datetime.now(settings.timezone).timestamp() * 1000)
+        for project in projects:
+            launch_ts = project.get("launch_ts")
+            if launch_ts and launch_ts < now_ms:
+                continue
+            official_launch_ts = self._resolve_official_launch_ts(project)
+            if official_launch_ts is not None:
+                project["launch_ts"] = official_launch_ts
+                project["launchText"] = datetime.fromtimestamp(official_launch_ts / 1000, tz=settings.timezone).strftime("%d/%m/%Y %H:%M:%S")
+                if official_launch_ts < now_ms:
+                    warnings.append(f"Filtered already-launched project from official source: {project.get('name')}")
+                    continue
+            filtered.append(project)
+        return filtered, warnings
+
+    def _resolve_official_launch_ts(self, project: dict) -> int | None:
+        normalized_name = str(project.get("name") or "").strip().lower()
+        if normalized_name in self.OFFICIAL_LAUNCH_OVERRIDES:
+            return self.OFFICIAL_LAUNCH_OVERRIDES[normalized_name]
+
+        launch_ts = project.get("launch_ts")
+        if not launch_ts:
+            return None
+        now_ms = int(datetime.now(settings.timezone).timestamp() * 1000)
+        if abs(launch_ts - now_ms) > 36 * 3_600_000:
+            return None
+
+        for url in [project.get("docsUrl"), project.get("websiteUrl"), project.get("projectUrl")]:
+            if not url or url == "—":
+                continue
+            html_text = self._fetch_text(url)
+            if not html_text:
+                continue
+            parsed = self._extract_official_utc_launch_ts(html_text)
+            if parsed is not None:
+                return parsed
+        return None
+
+    def _fetch_text(self, url: str) -> str | None:
+        try:
+            req = Request(url, headers={"User-Agent": settings.user_agent, "Accept": "text/html,application/xhtml+xml,text/plain"})
+            with urlopen(req, timeout=8) as response:
+                return response.read().decode("utf-8", "ignore")
+        except Exception:
+            return None
+
+    def _extract_official_utc_launch_ts(self, text: str) -> int | None:
+        match = re.search(
+            r'([A-Z][a-z]+\s+\d{1,2},\s+\d{4})\s*[-–]?\s*~?(\d{1,2}:\d{2})(?::\d{2})?\s*UTC',
+            text,
+            re.I,
+        )
+        if not match:
+            return None
+        try:
+            dt = datetime.strptime(f"{match.group(1)} {match.group(2)}", "%B %d, %Y %H:%M")
+            return int(dt.replace(tzinfo=timezone.utc).timestamp() * 1000)
+        except Exception:
             return None
