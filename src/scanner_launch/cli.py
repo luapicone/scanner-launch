@@ -8,6 +8,7 @@ from scanner_launch.services.discovery import DiscoveryService
 from scanner_launch.services.risk import RiskAnalyzerService
 from scanner_launch.services.scan import BatchScanService
 from scanner_launch.storage import SnapshotStore
+from scanner_launch.webapp import serve
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -28,6 +29,10 @@ def build_parser() -> argparse.ArgumentParser:
     scan.add_argument("--limit", type=int, default=20, help="Cantidad máxima de tokens a evaluar")
     scan.add_argument("--max-age-hours", type=int, default=24, help="Ventana máxima de lanzamiento")
     scan.add_argument("--no-save", action="store_true", help="No guardar snapshot JSON/CSV de esta corrida")
+
+    web = subparsers.add_parser("web", help="Levantar dashboard HTML local")
+    web.add_argument("--host", default="127.0.0.1", help="Host para servir la web")
+    web.add_argument("--port", type=int, default=8765, help="Puerto para servir la web")
 
     return parser
 
@@ -66,6 +71,10 @@ def main() -> None:
             payload["snapshotPath"] = str(snapshot_json_path)
             payload["snapshotCsvPath"] = str(snapshot_csv_path)
         print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return
+
+    if args.command == "web":
+        serve(host=args.host, port=args.port)
         return
 
     parser.error("Unknown command")

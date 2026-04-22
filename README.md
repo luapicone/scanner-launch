@@ -39,6 +39,7 @@ cd scanner-launch
 python3 main.py discover
 python3 main.py analyze BONK --chain solana
 python3 main.py scan --limit 20 --max-age-hours 24
+python3 main.py web --port 8765
 ```
 
 Cada corrida guarda snapshots JSON y CSV automáticos en `outputs/discover/...`, `outputs/analyze/...` o `outputs/scan/...`.
@@ -59,6 +60,15 @@ python3 main.py analyze BONK --chain solana
 ### Scan completo de la corrida
 ```bash
 python3 main.py scan --limit 20 --max-age-hours 24
+```
+
+### Dashboard HTML local
+```bash
+python3 main.py web --port 8765
+```
+Después abrís:
+```bash
+http://127.0.0.1:8765
 ```
 
 ## Próximo paso recomendado
