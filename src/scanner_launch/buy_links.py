@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from urllib.parse import urlparse
 
+
+def _steps(*items: str) -> str:
+    return "\n".join(f"{idx}. {item}" for idx, item in enumerate(items, start=1) if item)
+
 DEX_LABELS = {
     "pumpfun": "Pump.fun",
     "pumpswap": "PumpSwap",
@@ -95,14 +99,24 @@ def build_live_buy_target(chain_id: str | None, token_address: str | None, dex_i
                 "buyWhere": f"{dex_label} · {chain_label}",
                 "buyLink": f"https://pump.fun/coin/{token}",
                 "buyLabel": f"Comprar en {dex_label}",
-                "buyNote": f"Ruta directa detectada para el ecosistema {dex_label}.",
+                "buyNote": _steps(
+                    f"Abrí {dex_label} desde el botón.",
+                    "Conectá tu wallet.",
+                    "Verificá que el token y la red sean correctos.",
+                    "Elegí el monto y confirmá la compra.",
+                ),
                 "hasDirectBuy": True,
             }
         return {
             "buyWhere": f"Jupiter · {chain_label}",
             "buyLink": f"https://jup.ag/swap/SOL-{token}",
             "buyLabel": "Comprar en Jupiter",
-            "buyNote": f"Swap directo sugerido para {chain_label}. Mercado base detectado en {dex_label}.",
+            "buyNote": _steps(
+                "Abrí Jupiter desde el botón.",
+                f"Operá en la red {chain_label} con tu wallet conectada.",
+                "Revisá el token de salida y el slippage antes de confirmar.",
+                "Confirmá el swap para conseguir el token.",
+            ),
             "hasDirectBuy": True,
         }
 
@@ -112,7 +126,12 @@ def build_live_buy_target(chain_id: str | None, token_address: str | None, dex_i
             "buyWhere": f"Uniswap · {chain_label}",
             "buyLink": f"https://app.uniswap.org/swap?chain={chain_param}&outputCurrency={token}",
             "buyLabel": "Comprar en Uniswap",
-            "buyNote": f"Ruta directa sugerida para {chain_label}. Mercado detectado en {dex_label}.",
+            "buyNote": _steps(
+                "Abrí Uniswap desde el botón.",
+                f"Conectá tu wallet en {chain_label}.",
+                "Verificá contrato, red y liquidez.",
+                "Confirmá el swap para comprar el token.",
+            ),
             "hasDirectBuy": True,
         }
 
@@ -121,7 +140,12 @@ def build_live_buy_target(chain_id: str | None, token_address: str | None, dex_i
             "buyWhere": f"PancakeSwap · {chain_label}",
             "buyLink": f"https://pancakeswap.finance/swap?chain=bsc&outputCurrency={token}",
             "buyLabel": "Comprar en PancakeSwap",
-            "buyNote": f"Ruta directa sugerida para {chain_label}. Mercado detectado en {dex_label}.",
+            "buyNote": _steps(
+                "Abrí PancakeSwap desde el botón.",
+                f"Conectá tu wallet en {chain_label}.",
+                "Verificá contrato, par y slippage.",
+                "Confirmá el swap para conseguir el token.",
+            ),
             "hasDirectBuy": True,
         }
 
@@ -130,7 +154,12 @@ def build_live_buy_target(chain_id: str | None, token_address: str | None, dex_i
             "buyWhere": f"Trader Joe · {chain_label}",
             "buyLink": f"https://www.traderjoexyz.com/avalanche/trade?outputCurrency={token}",
             "buyLabel": "Comprar en Trader Joe",
-            "buyNote": f"Ruta directa sugerida para {chain_label}. Mercado detectado en {dex_label}.",
+            "buyNote": _steps(
+                "Abrí Trader Joe desde el botón.",
+                f"Conectá tu wallet en {chain_label}.",
+                "Verificá contrato, pool y liquidez antes de operar.",
+                "Confirmá el swap para conseguir el token.",
+            ),
             "hasDirectBuy": True,
         }
 
@@ -139,7 +168,12 @@ def build_live_buy_target(chain_id: str | None, token_address: str | None, dex_i
             "buyWhere": f"{dex_label} · {chain_label}",
             "buyLink": market_url,
             "buyLabel": f"Abrir mercado en {dex_label}",
-            "buyNote": "No encontré una ruta de swap universal confiable para esta chain, así que dejo el mercado detectado.",
+            "buyNote": _steps(
+                f"Abrí el mercado detectado en {dex_label} desde el botón.",
+                "Revisá si el proyecto publica ahí el par o la ruta de compra.",
+                "Verificá contrato, red y liquidez antes de operar.",
+                "Si no aparece compra directa, seguí las redes oficiales del proyecto.",
+            ),
             "hasDirectBuy": False,
         }
 
@@ -161,7 +195,12 @@ def build_prelaunch_buy_target(buy_url: str | None, website_url: str | None, pro
                 "buyWhere": f"{venue} · acceso temprano",
                 "buyLink": buy_url,
                 "buyLabel": "Registrarse / Whitelist",
-                "buyNote": "Se detectó una ruta pública para sumarte al acceso temprano, whitelist o registro del proyecto.",
+                "buyNote": _steps(
+                    f"Abrí {venue} desde el botón.",
+                    "Completá el registro, whitelist o waitlist que figure en la página.",
+                    "Seguí las instrucciones del proyecto para quedar habilitado.",
+                    "Revisá luego email, Discord o Telegram para saber cuándo reclamar o comprar.",
+                ),
                 "hasDirectBuy": False,
             }
         if any(token in low for token in ["tge", "listing", "launch", "update", "guide", "claim", "airdrop"]):
@@ -169,14 +208,24 @@ def build_prelaunch_buy_target(buy_url: str | None, website_url: str | None, pro
                 "buyWhere": f"{venue} · guía de acceso",
                 "buyLink": buy_url,
                 "buyLabel": "Cómo conseguirlo",
-                "buyNote": "Se detectó una guía o actualización pública con instrucciones de acceso, claim, TGE o lanzamiento.",
+                "buyNote": _steps(
+                    f"Abrí la guía o actualización en {venue} desde el botón.",
+                    "Leé cómo se distribuye el token: claim, TGE, airdrop, listing o registro previo.",
+                    "Seguí exactamente las instrucciones oficiales que indique el proyecto.",
+                    "Usá Twitter, Telegram o Discord oficiales para validar fecha y modalidad antes de moverte.",
+                ),
                 "hasDirectBuy": False,
             }
         return {
             "buyWhere": f"{venue} · {stage or 'Prelaunch'}",
             "buyLink": buy_url,
             "buyLabel": f"Entrar por {venue}",
-            "buyNote": "Se detectó una ruta pública de entrada o participación desde la fuente relevada.",
+            "buyNote": _steps(
+                f"Abrí {venue} desde el botón.",
+                "Revisá si la página ofrece compra, registro, claim o participación.",
+                "Confirmá que sea la ruta oficial del proyecto.",
+                "Seguí los pasos publicados ahí para conseguir el token.",
+            ),
             "hasDirectBuy": True,
         }
 
@@ -186,7 +235,12 @@ def build_prelaunch_buy_target(buy_url: str | None, website_url: str | None, pro
             "buyWhere": f"{venue} · sitio oficial",
             "buyLink": website_url,
             "buyLabel": "Ir al sitio oficial",
-            "buyNote": "Todavía no detecté una compra pública directa. El acceso queda referenciado al sitio oficial del proyecto.",
+            "buyNote": _steps(
+                f"Abrí el sitio oficial de {venue} desde el botón.",
+                "Buscá secciones como token, TGE, claim, whitelist, launch, docs o community.",
+                "Entrá a los canales oficiales del proyecto para ver cómo se consigue el token.",
+                "No operes hasta confirmar la modalidad oficial de distribución.",
+            ),
             "hasDirectBuy": False,
         }
 
@@ -196,7 +250,12 @@ def build_prelaunch_buy_target(buy_url: str | None, website_url: str | None, pro
             "buyWhere": f"{venue} · fuente",
             "buyLink": project_url,
             "buyLabel": "Abrir fuente",
-            "buyNote": "No encontré una ruta clara de compra y dejo la fuente original para seguimiento manual.",
+            "buyNote": _steps(
+                "Abrí la fuente original desde el botón.",
+                "Revisá links oficiales del proyecto, docs y redes.",
+                "Buscá si la distribución será por claim, whitelist, launchpad o listing.",
+                "Usá esa info para ir a la ruta oficial antes de intentar comprar.",
+            ),
             "hasDirectBuy": False,
         }
 
