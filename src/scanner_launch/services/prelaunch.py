@@ -12,12 +12,16 @@ class PrelaunchService:
     def __init__(self, provider: PrelaunchProvider | None = None) -> None:
         self.provider = provider or PrelaunchProvider()
 
-    def scan(self, limit: int = 40) -> PrelaunchResult:
-        projects, warnings = self.provider.fetch_projects(limit=limit)
+    def scan(self, limit: int = 40, min_score: int = 60, future_only: bool = True, source_limit: int | None = None) -> PrelaunchResult:
+        fetch_limit = max(limit * 4, 120, source_limit or 0)
+        projects, warnings = self.provider.fetch_projects(limit=fetch_limit)
         enriched = [self._score_project(project) for project in projects]
-        enriched.sort(key=lambda item: item.overallScore, reverse=True)
+        if future_only:
+            enriched = [item for item in enriched if self._launch_timestamp(item.launchTime) is None or self._launch_timestamp(item.launchTime) >= datetime.now(settings.timezone).timestamp()]
+        enriched = [item for item in enriched if item.overallScore >= min_score]
+        enriched.sort(key=lambda item: (self._launch_timestamp(item.launchTime) or 10**18, -item.overallScore, item.name.lower()))
         return PrelaunchResult(
-            projects=enriched,
+            projects=enriched[:limit],
             source="ICO Analytics + CoinMarketCap Upcoming",
             fetchedAt=now_art(datetime.now(settings.timezone)),
             warnings=warnings,
@@ -256,3 +260,11 @@ class PrelaunchService:
         whole_hours = int(hours)
         minutes = int(round((hours - whole_hours) * 60))
         return f"en {whole_hours}h {minutes}m" if minutes > 0 else f"en {whole_hours} horas"
+
+    def _launch_timestamp(self, launch_time: str | None) -> float | None:
+        if not launch_time:
+            return None
+        try:
+            return datetime.strptime(launch_time, "%d/%m/%Y %H:%M:%S").replace(tzinfo=settings.timezone).timestamp()
+        except ValueError:
+            return None

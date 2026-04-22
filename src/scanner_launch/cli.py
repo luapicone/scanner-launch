@@ -32,7 +32,10 @@ def build_parser() -> argparse.ArgumentParser:
     scan.add_argument("--no-save", action="store_true", help="No guardar snapshot JSON/CSV de esta corrida")
 
     prelaunch = subparsers.add_parser("prelaunch", help="Analizar proyectos previos al lanzamiento")
-    prelaunch.add_argument("--limit", type=int, default=40, help="Cantidad máxima de proyectos a evaluar")
+    prelaunch.add_argument("--limit", type=int, default=60, help="Cantidad máxima de proyectos a devolver")
+    prelaunch.add_argument("--min-score", type=int, default=60, help="Score mínimo para considerar un proyecto")
+    prelaunch.add_argument("--source-limit", type=int, default=160, help="Cantidad máxima de proyectos brutos a levantar antes de filtrar")
+    prelaunch.add_argument("--include-past", action="store_true", help="Incluir proyectos ya lanzados")
     prelaunch.add_argument("--no-save", action="store_true", help="No guardar snapshot JSON/CSV de esta corrida")
 
     web = subparsers.add_parser("web", help="Levantar dashboard HTML local")
@@ -79,7 +82,12 @@ def main() -> None:
         return
 
     if args.command == "prelaunch":
-        result = PrelaunchService().scan(limit=args.limit)
+        result = PrelaunchService().scan(
+            limit=args.limit,
+            min_score=args.min_score,
+            future_only=not args.include_past,
+            source_limit=args.source_limit,
+        )
         payload = to_dict(result)
         if not args.no_save:
             snapshot_json_path, snapshot_csv_path = store.save("prelaunch", result)

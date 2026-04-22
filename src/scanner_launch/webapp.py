@@ -46,8 +46,11 @@ class ScannerWebHandler(SimpleHTTPRequestHandler):
 
     def _handle_prelaunch(self, query: str) -> None:
         params = parse_qs(query)
-        limit = self._to_int(params.get("limit", ["40"])[0], 40)
-        result = self.prelaunch_service.scan(limit=limit)
+        limit = self._to_int(params.get("limit", ["60"])[0], 60)
+        min_score = self._to_int(params.get("minScore", ["60"])[0], 60)
+        source_limit = self._to_int(params.get("sourceLimit", ["160"])[0], 160)
+        include_past = self._to_bool(params.get("includePast", ["false"])[0], False)
+        result = self.prelaunch_service.scan(limit=limit, min_score=min_score, future_only=not include_past, source_limit=source_limit)
         self._send_json(to_dict(result))
 
     def _handle_discover(self, query: str) -> None:
@@ -80,6 +83,11 @@ class ScannerWebHandler(SimpleHTTPRequestHandler):
             return int(value)
         except (TypeError, ValueError):
             return default
+
+    def _to_bool(self, value: str, default: bool) -> bool:
+        if value is None:
+            return default
+        return str(value).strip().lower() in {"1", "true", "yes", "on"}
 
 
 def serve(host: str = "127.0.0.1", port: int = 8765) -> None:

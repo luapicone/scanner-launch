@@ -618,6 +618,7 @@
               <div class="hero-point">Links directos a compra / participación cuando existen</div>
               <div class="hero-point">Horario y countdown en Argentina</div>
               <div class="hero-point">Modo launch + modo prelaunch en una sola UI</div>
+              <div class="hero-point">Filtro de calidad y orden por launch más cercano</div>
             </div>
           </div>
           <div class="summary-panel">
@@ -645,7 +646,22 @@
           </div>
           <div class="field">
             <label>Límite de resultados</label>
-            <input id="limit" type="number" min="1" max="200" value="40" />
+            <input id="limit" type="number" min="1" max="300" value="60" />
+          </div>
+          <div class="field">
+            <label>Score mínimo (prelaunch)</label>
+            <input id="minScore" type="number" min="0" max="100" value="60" />
+          </div>
+          <div class="field">
+            <label>Fuente bruta (prelaunch)</label>
+            <input id="sourceLimit" type="number" min="20" max="500" value="160" />
+          </div>
+          <div class="field">
+            <label>Incluir ya lanzadas</label>
+            <select id="includePast">
+              <option value="false">No, solo futuras</option>
+              <option value="true">Sí, incluir pasadas</option>
+            </select>
           </div>
           <div class="field">
             <label>Máx horas (launch / discovery)</label>
@@ -700,18 +716,29 @@
       function syncModeHints() {
         const mode = document.getElementById('mode').value;
         const maxAge = document.getElementById('maxAgeHours');
+        const minScore = document.getElementById('minScore');
+        const sourceLimit = document.getElementById('sourceLimit');
+        const includePast = document.getElementById('includePast');
         maxAge.disabled = mode === 'prelaunch';
+        minScore.disabled = mode !== 'prelaunch';
+        sourceLimit.disabled = mode !== 'prelaunch';
+        includePast.disabled = mode !== 'prelaunch';
       }
 
       async function runMode() {
         const mode = document.getElementById('mode').value;
-        const limit = document.getElementById('limit').value || '40';
+        const limit = document.getElementById('limit').value || '60';
         const maxAgeHours = document.getElementById('maxAgeHours').value || '24';
+        const minScore = document.getElementById('minScore').value || '60';
+        const sourceLimit = document.getElementById('sourceLimit').value || '160';
+        const includePast = document.getElementById('includePast').value || 'false';
         setStatus('Cargando datos...');
         renderWarnings([]);
         try {
           let url = `/api/${mode}?limit=${encodeURIComponent(limit)}`;
-          if (mode !== 'prelaunch') {
+          if (mode === 'prelaunch') {
+            url += `&minScore=${encodeURIComponent(minScore)}&sourceLimit=${encodeURIComponent(sourceLimit)}&includePast=${encodeURIComponent(includePast)}`;
+          } else {
             url += `&maxAgeHours=${encodeURIComponent(maxAgeHours)}`;
           }
           const res = await fetch(url);
@@ -776,7 +803,7 @@
       function subtitleForMode(mode, items) {
         if (mode === 'prelaunch') {
           const direct = items.filter(item => item.hasDirectBuy).length;
-          return `Proyectos previos al lanzamiento, ordenados por score. ${direct} tienen link directo de entrada o participación.`;
+          return `Solo proyectos futuros con mejor proyección, ordenados por lanzamiento más cercano. ${direct} tienen link directo de entrada o participación.`;
         }
         if (mode === 'scan') return 'Tokens ya lanzados, enriquecidos con scoring de riesgo y acceso al par.';
         if (mode === 'discover') return 'Feed bruto de descubrimiento para ver nuevos tokens y abrir rápido el mercado principal.';
